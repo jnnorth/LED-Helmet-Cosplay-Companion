@@ -1,0 +1,7 @@
+{
+  "name": "cosplay-companion",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
