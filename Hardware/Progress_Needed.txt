@@ -1,0 +1,17 @@
+The following work still needs to be done:
+
+Bluetooth:
+  May need to find the port at runtime for the ESP32 bluetooth servers
+  The python scripts that receive the bluetooth data currently write to the terminal that they are connected, I would like them to send data to the main program to inform it that the connection was successful
+
+Heat/Humidity Sensors:
+  Need to add variables to main to store the values
+  Need to write a python code to read the GPIO pins the sensor is connected to and send the data to the main file
+  OR Need to write a c++ function to read the GPIO pins.
+    C++ solution removes need for other files and jobs
+    Python solution allows use of a GPIO reading library. There may still be a c++ library to read them that I am unaware of
+    
+Drawing:
+  Since I do not have the hardware yet to draw images to an LED matrix, I do not have any code to do so.
+  Currently, the main program writes to the terminal which face is currently being drawn.
+  The main program currently calls fork() and makes the child process draw. I do not know if drawing requires an exec call, so if it is not needed I can quickly update the code to simplify this.
