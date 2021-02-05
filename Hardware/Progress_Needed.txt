@@ -6,10 +6,7 @@ Bluetooth:
 
 Heat/Humidity Sensors:
   Need to add variables to main to store the values
-  Need to write a python code to read the GPIO pins the sensor is connected to and send the data to the main file
-  OR Need to write a c++ function to read the GPIO pins.
-    C++ solution removes need for other files and jobs
-    Python solution allows use of a GPIO reading library. There may still be a c++ library to read them that I am unaware of
+  Need to write a function to read the GPIO pins once I know which pins are available.
     
 Drawing:
   Since I do not have the hardware yet to draw images to an LED matrix, I do not have any code to do so.
