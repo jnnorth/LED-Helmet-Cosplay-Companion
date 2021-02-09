@@ -25,6 +25,18 @@ void catch_int(int sig_num) {
 	}
 }
 
+int get_ms_time() {
+	using namespace std::chrono;
+	uint64_t ms_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+	return (int)(ms_time % 100);
+}
+
+void wait_to_read() {
+	while((20 < get_ms_time()) || (get_ms_time() > 80)) {
+		// Do nothing
+	}
+}
+
 void draw_neutral() {
 	std::cout << "neutral\n";
 }
@@ -113,6 +125,7 @@ bool read_files() { // returns true if update needed
 		close(pipefd[0]);
 		int ret = 0;
 		std::ifstream file_in("blue_input_1.txt");
+		wait_to_read();
 		if(file_in.is_open()) {
 			std::string readInfo;
 			std::getline(file_in, readInfo);
@@ -126,6 +139,7 @@ bool read_files() { // returns true if update needed
 			ret = stoi(readInfo);
 		}
 		std::ofstream file_out;
+		wait_to_read();
 		file_out.open("blue_input_1.txt", std::ofstream::out | std::ofstream::trunc);
 		file_out.close();
 		write(pipefd[1], &ret, sizeof(ret));
@@ -182,6 +196,7 @@ bool read_files() { // returns true if update needed
 		close(pipefd[0]);
 		int ret = 0;
 		std::ifstream file_in("blue_input_2.txt");
+		wait_to_read();
 		if(file_in.is_open()) {
 			std::string readInfo;
 			std::getline(file_in, readInfo);
@@ -194,6 +209,7 @@ bool read_files() { // returns true if update needed
 			ret = stoi(readInfo);
 		}
 		std::ofstream file_out;
+		wait_to_read();
 		file_out.open("blue_input_2.txt", std::ofstream::out | std::ofstream::trunc);
 		file_out.close();
 		write(pipefd[1], &ret, sizeof(ret));
@@ -239,18 +255,12 @@ bool read_files() { // returns true if update needed
 	//TODO: Temperature sensor reading
 	//
 	bool ret_val = false;
-	for(int i = 0; i < 5; i++) {
+	for(int i = 0; i < 10; i++) {
 		if(buttons_real[i] && !temp_buttons[i]) {
 			ret_val = true;
 			for(int j = 0; j < 10; j++) {
 				buttons_virtual[j] = buttons_real[j];
 			}
-		}
-	}
-	for(int i = 5; i < 10; i++) {
-		if(buttons_real[i] != temp_buttons[i]) {
-			ret_val = true;
-			buttons_virtual[i] = buttons_real[i];
 		}
 	}
 	for(int i = 0; i < 15; i++) {
@@ -350,31 +360,106 @@ void setup() {
 		process[i] = 0;
 	}
 	fork_and_draw(draw_loading);
+	int pipefd[2];
+	pipe(pipefd);
 	pid_t ret = process[RECEIVER_1] = fork();
 	if(ret == 0) {
-		std::string py3 = "python3";
-		std::string btr = "bluetooth_receiver_1.py";
-		char py3_c[py3.size()+1];
-		char btr_c[btr.size()+1];
-		strcpy(py3_c, py3.c_str());
-		strcpy(btr_c, btr.c_str());
-		char * args[] = {py3_c, btr_c, NULL};
-		execvp(args[0], args);
-		std::cerr << "Failure to open receiver 1\n";
-		exit(0);
+		// Child opens the python script
+		// Child calls fork, child's child checks for success/failure of python script
+			
+		// Delete the contents of the file to prevent misreading it
+		std::ofstream file_out;
+		file_out.open("blue_input_1.txt", std::ofstream::out | std::ofstream::trunc);
+		file_out.close();
+		pid_t checker_pid = fork();
+		if(checker_pid != 0) {
+			std::string py3 = "python3";
+			std::string btr = "bluetooth_receiver_1.py";
+			char py3_c[py3.size()+1];
+			char btr_c[btr.size()+1];
+			strcpy(py3_c, py3.c_str());
+			strcpy(btr_c, btr.c_str());
+			char * args[] = {py3_c, btr_c, NULL};
+			execvp(args[0], args);
+			std::cerr << "Failure to open receiver 1\n";
+			exit(-1);
+		}
+		std::string readInfo;
+		while(true) {
+			wait_to_read();
+			std::ifstream file_in("blue_input_1.txt");
+			std::getline(file_in, readInfo);
+			file_in.close();
+			if(readInfo.size() != 0) {
+				int read_int = stoi(readInfo);
+				if(read_int != -1 && read_int != 1) {
+					std::cerr << "failure to check if receiver 1 works.\nExpected 1 or -1, received " << read_int << ".\n";
+				}
+				close(pipefd[0]);
+				write(pipefd[1], &read_int, sizeof(read_int));
+				close(pipefd[1]);
+				exit(0);
+			}	
+		}
 	}
+	close(pipefd[1]);
+	int success = 0;
+	read(pipefd[0], &success, sizeof(success));
+	close(pipefd[0]);
+	if(success == 1) {
+		std::cout << "Successfully connected!\n";
+	}
+	else {
+		std::cerr << "Error: Unable to connect to bluetooth server 1\n";
+		exit(-1);
+	}
+	pipe(pipefd);
 	ret = process[RECEIVER_2] = fork();
 	if(ret == 0) {
-		std::string py3 = "python3";
-		std::string btr = "bluetooth_receiver_2.py";
-		char py3_c[py3.size()+1];
-		char btr_c[btr.size()+1];
-		strcpy(py3_c, py3.c_str());
-		strcpy(btr_c, btr.c_str());
-		char * args[] = {py3_c, btr_c, NULL};
-		execvp(args[0], args);
-		std::cerr << "failure to open receiver 2\n";
-		exit(0);
+		std::ofstream file_out;
+		file_out.open("blue_input_2.txt", std::ofstream::out | std::ofstream::trunc);
+		file_out.close();
+		pid_t checker_pid = fork();
+		if(checker_pid != 0) {
+			std::string py3 = "python3";
+			std::string btr = "bluetooth_receiver_2.py";
+			char py3_c[py3.size()+1];
+			char btr_c[btr.size()+1];
+			strcpy(py3_c, py3.c_str());
+			strcpy(btr_c, btr.c_str());
+			char * args[] = {py3_c, btr_c, NULL};
+			execvp(args[0], args);
+			std::cerr << "failure to open receiver 2\n";
+			exit(0);
+		}
+		std::string readInfo;
+		while(true) {
+			wait_to_read();
+			std::ifstream file_in("blue_input_2.txt");
+			std::getline(file_in, readInfo);
+			file_in.close();
+			if(readInfo.size() != 0) {
+				int read_int = stoi(readInfo);
+				if(read_int != -1 && read_int != 1) {
+					std::cerr << "failure to chekc if receiver 2 works.\nExpected 1 or -1, received " << read_int << ".\n";
+				}
+				close(pipefd[0]);
+				write(pipefd[1], &read_int, sizeof(read_int));
+				close(pipefd[1]);
+				exit(0);
+			}
+		}
+	}
+	close(pipefd[1]);
+	success = 0;
+	read(pipefd[0], &success, sizeof(success));
+	close(pipefd[0]);
+	if(success == 1) {
+		std::cout << "Successfully connected!\n";
+	}
+	else {
+		std::cerr << "Error: Unable to connect to bluetooth server 2\n";
+		exit(-1);
 	}
 	load_settings();
 	for(int i = 0; i < 10; i++) {
@@ -396,11 +481,7 @@ void setup() {
 	sigaction(SIGINT, &sa, NULL);
 }
 
-int get_ms_time() {
-	using namespace std::chrono;
-	uint64_t ms_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-	return (int)(ms_time % 1000);
-}
+
 void debug_buttons() {
 	std::cout << "real: ";
 	for(int i = 0; i < 10; i++) {
@@ -424,10 +505,7 @@ void debug_buttons() {
 }
 
 void loop() {
-	 
-	while(get_ms_time() < 30 || get_ms_time() > 70) {
-		// Does nothing
-	}
+	wait_to_read();
 	if(read_files()) {
 		draw();
 	}
