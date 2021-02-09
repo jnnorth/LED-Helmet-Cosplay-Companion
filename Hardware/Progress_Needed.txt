@@ -1,8 +1,7 @@
 The following work still needs to be done:
 
 Bluetooth:
-  May need to find the port at runtime for the ESP32 bluetooth servers
-  The python scripts that receive the bluetooth data currently write to the terminal that they are connected, I would like them to send data to the main program to inform it that the connection was successful
+  May need to find how to find the MAC address of the bluetooth servers at runtime
 
 Heat/Humidity Sensors:
   Need to add variables to main to store the values
@@ -12,3 +11,6 @@ Drawing:
   Since I do not have the hardware yet to draw images to an LED matrix, I do not have any code to do so.
   Currently, the main program writes to the terminal which face is currently being drawn.
   The main program currently calls fork() and makes the child process draw. I do not know if drawing requires an exec call, so if it is not needed I can quickly update the code to simplify this.
+
+Testing:
+  My micro-USB cables are no longer functioning, so I am unable to test the code. Since no significant changes were made to the python Bluetooth clients outside of the new ports, and no changes were made in the main process where the information is received from the python scripts, it should still work fine.
