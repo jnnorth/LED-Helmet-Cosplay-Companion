@@ -1,25 +1,23 @@
 import React from 'react';
-import { BluetoothLE } from '@ionic-native/bluetooth-le';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
-import ExploreContainer from '../components/ExploreContainer';
+import BluetoothButton from '../components/BluetoothButton';
 import './Tab1.css';
 
 const Tab1: React.FC = () => {
-  BluetoothLE.initialize();
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Tab 1</IonTitle>
+          <IonTitle>Bluetooth</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
         <IonHeader collapse="condense">
           <IonToolbar>
-            <IonTitle size="large">Tab 1</IonTitle>
+            <IonTitle size="large">Bluetooth</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <ExploreContainer name="Tab 1 page" />
+        <BluetoothButton title="Connect to Raspberry Pi via Bluetooth" />
       </IonContent>
     </IonPage>
   );
