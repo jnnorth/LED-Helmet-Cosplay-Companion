@@ -26,7 +26,7 @@ int main(int argc, char ** argv) {
 
 	try {
 		InitializeMagick(*argv);
-		Image img_t1("Images/smiley.png");
+		Image img_t1("Images/test.png");
 		int nx_t1 = img_t1.columns();
 		int ny_t1 = img_t1.rows();
 		int input = 0;
