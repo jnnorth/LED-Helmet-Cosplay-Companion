@@ -1,9 +1,11 @@
-#include "../rpi-rgb-led-matrix/include/led-matrix.h"
-#include "../rpi-rgb-led-matrix/include/pixel-mapper.h"
+#include "led-matrix.h"
+#include "pixel-mapper.h"
 
 #include <Magick++.h>
 #include <iostream>
 #include <signal.h>
+#include <sstream>
+#include <fstream>
 
 using namespace Magick;
 using rgb_matrix::GPIO;
@@ -26,25 +28,41 @@ int main(int argc, char ** argv) {
 
 	try {
 		InitializeMagick(*argv);
-		Image img_t1("Images/test.png");
-		int nx_t1 = img_t1.columns();
-		int ny_t1 = img_t1.rows();
-		int input = 0;
+		Image img_test("Images/test1.png");
+		int num_cols = img_test.columns();
+		int num_rows = img_test.rows();
+		int input = 0xffffff;
+
+		// Allow the user to enter a hex number
 		std::cin.unsetf(std::ios::dec);
 		std::cin.unsetf(std::ios::oct);
 		std::cin.unsetf(std::ios::hex);
 		while(input != -1) {
-			std::cout << "Enter a hex color (Ex: 0x5fbcd3): ";
+			// Input a color
+			std::cout << "Enter a hex color (Ex: 0x5fbcd3) or -1 to quit: ";
 			std::cin >> input;
-			for(int i = 0; i < ny_t1; i++) {
-				for(int j = 0; j < nx_t1; j++) {
-					ColorRGB rgb(img_t1.pixelColor(i,j));
-					char img_red   = ScaleQuantumToChar(rgb.redQuantum());
-					char img_green = ScaleQuantumToChar(rgb.greenQuantum());
-					char img_blue  = ScaleQuantumToChar(rgb.blueQuantum());
-					img_red   *= (float)(my_red)   / 255.f;
-					img_green *= (float)(my_green) / 255.f;
-					img_blue  *= (float)(my_blue)  / 255.f;
+			if(input == -1) {
+				exit(0);
+			}
+
+			// Set color modifiers based on user input
+			my_blue = (input & 0x0000ff);
+			input >>= 8;
+			my_green = input & 0x00ff;
+			input >>= 8;
+			my_red = input;
+
+			// Draw new image using color modifier
+			matrix->Clear();
+			for(int i = 0; i < num_rows; i++) {
+				for(int j = 0; j < num_cols; j++) {
+					ColorRGB rgb(img_test.pixelColor(i,j));
+					int img_red   = ScaleQuantumToChar(rgb.redQuantum());
+					int img_green = ScaleQuantumToChar(rgb.greenQuantum());
+					int img_blue  = ScaleQuantumToChar(rgb.blueQuantum());
+					img_red   *= ((float)(my_red)   / 255.f);
+					img_green *= ((float)(my_green) / 255.f);
+					img_blue  *= ((float)(my_blue)  / 255.f);
 					matrix->SetPixel(i, j, img_red, img_green, img_blue);
 				}
 			}
