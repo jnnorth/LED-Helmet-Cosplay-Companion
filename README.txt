@@ -3,4 +3,4 @@ To run app:
 - Install Ionic tools as directed at https://ionicframework.com/docs/react/your-first-app
 - type "ionic serve" in command prompt to launch app locally in a web browser
 
-BluetoothLE plugin: https://github.com/randdusing/cordova-plugin-bluetoothle
+Bluetooth Serial plugin: https://github.com/don/BluetoothSerial

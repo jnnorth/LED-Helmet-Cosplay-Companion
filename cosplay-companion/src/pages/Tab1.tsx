@@ -17,7 +17,7 @@ const Tab1: React.FC = () => {
             <IonTitle size="large">Bluetooth</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <BluetoothButton title="Connect to Raspberry Pi via Bluetooth" />
+        <BluetoothButton title="Connect to Raspberry Pi via Bluetooth"/>
       </IonContent>
     </IonPage>
   );
