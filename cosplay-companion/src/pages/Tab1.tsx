@@ -1,6 +1,7 @@
-import React from 'react';
+import React, {ReactDOM} from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import BluetoothButton from '../components/BluetoothButton';
+import MACForm from '../components/MACForm'
 import './Tab1.css';
 
 const Tab1: React.FC = () => {
@@ -18,6 +19,7 @@ const Tab1: React.FC = () => {
           </IonToolbar>
         </IonHeader>
         <BluetoothButton title="Connect to Raspberry Pi via Bluetooth"/>
+        <MACForm></MACForm>
       </IonContent>
     </IonPage>
   );

@@ -2,17 +2,21 @@ import React from 'react';
 import { IonButton } from '@ionic/react';
 import { BluetoothSerial } from '@ionic-native/bluetooth-serial';
 
-
-let bluetoothComponent = {
-  macAddress: 'AA:BB:CC:DD:EE:FF', // dummy MAC address, need to manually enter MAC address of Raspberry Pi
+export let bluetoothComponent = {
+  macAddress: 'AA:BB:CC:DD:EE:FF',
   sendText: "Test",
+
+  setMAC: function(MAC:string) {
+    bluetoothComponent.macAddress = MAC;
+    console.log("Given MAC Address: " + bluetoothComponent.macAddress)
+  },
 
   onClick: function() {
     let isClicked = "true"
     bluetoothComponent.sendText = 'hello world'
     window.localStorage.setItem("sendText", bluetoothComponent.sendText)
     window.localStorage.setItem("isClicked", isClicked)
-    window.location.reload(false)
+    window.location.reload()
     bluetoothComponent.init()
   },
 
@@ -90,18 +94,14 @@ interface ContainerProps {
   
   const BluetoothButton: React.FC<ContainerProps> = ({ title }) => {   
     return (
-      <div className="container">
+      <div className="container" id="container">
         <strong>{title}</strong>
             <p>
                 <IonButton color="primary" size="large" onClick={bluetoothComponent.onClick}>Connect to Device</IonButton>
-            </p>    
-            <div>
-              {
-                bluetoothComponent.testRender()
-              }
-            </div>
+            </p>
       </div>
     );
+
   };
   
   export default BluetoothButton;
