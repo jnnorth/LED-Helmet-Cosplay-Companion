@@ -3,7 +3,7 @@ import { IonButton } from '@ionic/react';
 import { BluetoothSerial } from '@ionic-native/bluetooth-serial';
 
 export let bluetoothComponent = {
-  macAddress: 'AA:BB:CC:DD:EE:FF',
+  macAddress: 'B8:27:EB:C8:32:3B',
   sendText: "Test",
 
   setMAC: function(MAC:string) {
@@ -27,6 +27,7 @@ export let bluetoothComponent = {
 
   bindEvents: function() {
     document.addEventListener('findDevice', bluetoothComponent.connectBluetooth, false)
+    bluetoothComponent.connectBluetooth()
   },
 
   connectBluetooth: function() {
