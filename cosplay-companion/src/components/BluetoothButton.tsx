@@ -16,12 +16,13 @@ export let bluetoothComponent = {
     bluetoothComponent.sendText = 'hello world'
     window.localStorage.setItem("sendText", bluetoothComponent.sendText)
     window.localStorage.setItem("isClicked", isClicked)
-    window.location.reload()
+    //window.location.reload()
     bluetoothComponent.init()
   },
 
   init: function() {
     console.log("Initializing bluetooth connection...")
+    alert(BluetoothSerial.discoverUnpaired())
     bluetoothComponent.bindEvents()
   },
 
@@ -35,15 +36,16 @@ export let bluetoothComponent = {
     if (BluetoothSerial.isEnabled()) {
       bluetoothComponent.onConnect()
     }
-    else {
-      bluetoothComponent.onDisconnect()
+    else
+    {
+      bluetoothComponent.connectFailed()
     }
   },
 
   onConnect: function() {
-    alert("Connected to device with MAC address: " + bluetoothComponent.macAddress + ".")
     BluetoothSerial.subscribe('\n')
     let data:string = 'This is a test string'
+    alert("Connected to device with MAC address: " + bluetoothComponent.macAddress)
     bluetoothComponent.sendData(data)
   },
 
