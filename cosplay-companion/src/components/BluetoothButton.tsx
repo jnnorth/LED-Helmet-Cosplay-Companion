@@ -6,6 +6,20 @@ export let bluetoothComponent = {
   macAddress: 'B8:27:EB:C8:32:3B',
   sendText: "Test",
 
+  testPiConnect: function() {
+    if (BluetoothSerial.isEnabled()) {
+      BluetoothSerial.connect('B8:27:EB:C8:32:3B')
+      BluetoothSerial.subscribe("\n")
+      let myTest:string = "This is a test string!"
+      BluetoothSerial.write(myTest).then( () => alert("Test string: " + myTest + " has been sent to Raspberry Pi."), () => alert("Failed to send test message!") )
+      BluetoothSerial.list().then(devices => alert("Paired devices: " + devices))
+      BluetoothSerial.disconnect().then( () => alert("Test Finished, Bluetooth has been disconnected."))
+    }
+    else {
+      alert("Connection failed. Make sure Bluetooth is enabled on both devices.")
+    }
+  },
+
   setMAC: function(MAC:string) {
     bluetoothComponent.macAddress = MAC;
     console.log("Given MAC Address: " + bluetoothComponent.macAddress)
@@ -100,7 +114,7 @@ interface ContainerProps {
       <div className="container" id="container">
         <strong>{title}</strong>
             <p>
-                <IonButton color="primary" size="large" onClick={bluetoothComponent.onClick}>Connect to Device</IonButton>
+                <IonButton color="primary" size="large" onClick={bluetoothComponent.testPiConnect}>Connect to Device</IonButton>
             </p>
       </div>
     );
