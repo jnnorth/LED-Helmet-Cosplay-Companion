@@ -16,6 +16,7 @@ class MACForm extends React.Component<{}, {value:string}> {
   
     handleSubmit(event:any) {
       bluetoothComponent.setMAC(this.state.value);
+      bluetoothComponent.send_to_pi(this.state.value);
       event.preventDefault();
     }
   
