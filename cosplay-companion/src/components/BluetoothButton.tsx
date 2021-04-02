@@ -1,29 +1,120 @@
 import React from 'react';
 import { IonButton } from '@ionic/react';
 import { BluetoothSerial } from '@ionic-native/bluetooth-serial';
+import { Plugins } from '@capacitor/core'
+const { Toast } = Plugins
 
 export let bluetoothComponent = {
-  macAddress: 'B8:27:EB:C8:32:3B',
-  sendText: "Test",
+  macAddress: 'DC:A6:32:84:37:41',
+    sendText: "Test",
+    bluetooth_started: false,
 
-  testPiConnect: function() {
-    if (BluetoothSerial.isEnabled()) {
-      BluetoothSerial.connect('B8:27:EB:C8:32:3B')
-      BluetoothSerial.subscribe("\n")
-      let myTest:string = "This is a test string!"
-      BluetoothSerial.write(myTest).then( () => alert("Test string: " + myTest + " has been sent to Raspberry Pi."), () => alert("Failed to send test message!") )
-      BluetoothSerial.list().then(devices => alert("Paired devices: " + devices))
-      BluetoothSerial.disconnect().then( () => alert("Test Finished, Bluetooth has been disconnected."))
-    }
-    else {
-      alert("Connection failed. Make sure Bluetooth is enabled on both devices.")
-    }
-  },
+    pi_connect: function () {
+        BluetoothSerial.disconnect().then(() => {
+            bluetoothComponent.testPiConnect()
+        }, () => {
+            bluetoothComponent.testPiConnect()
+        })
+    },
+
+    testPiConnect: function () {
+        BluetoothSerial.disconnect()
+        BluetoothSerial.isEnabled().then(() => {
+            BluetoothSerial.list().then(devices => {
+                let correct_mac_address : string = ""
+                correct_mac_address = bluetoothComponent.get_correct_mac(devices)
+                if (correct_mac_address != "None") {
+                    //alert("Attempting to connect with " + correct_mac_address + "...")
+                    BluetoothSerial.connect(correct_mac_address).subscribe(() => {
+                        // Successfully connected for write
+                        BluetoothSerial.subscribe('\n').subscribe(success => {
+                            // Subscribe success
+                            // Now connected for read and write
+                            // When a string is received, it is sent to the handle_read function
+                            bluetoothComponent.handle_read(success)
+                        }, error => {
+                            alert("Error: " + error)
+                        })
+                        bluetoothComponent.bluetooth_started = true
+                        let myTest: string = "This is a test string!"
+                        BluetoothSerial.write(myTest).then(() => {
+                            // Write Success
+                            alert("Test string: " + myTest + " has been sent to Raspberry Pi.")
+                        }, () => {
+                            // Write Fail
+                            alert("Failed to send test message!")
+                        })
+                    }, () => {
+                        // Connection failed or ended
+                        bluetoothComponent.bluetooth_started = false
+                        alert("Connection failed.")
+                        BluetoothSerial.disconnect()
+                    })
+                }
+                else {
+                    // No helmet paired
+                    bluetoothComponent.bluetooth_started = false
+                    alert("Please pair with a helmet first.")
+                }
+            }, () => {
+                // Failure on BluetoothSerial.list()
+                alert("Failed to list paired devices.")
+            })
+        }, () => {
+                // Bluetooth not enabled
+                bluetoothComponent.bluetooth_started = false
+                BluetoothSerial.disconnect()
+                alert("Please enable bluetooth.")
+        })
+    },
+
+    // Debugging purposes only
+    alertDevices: function (devices: pairedlist[]) {
+        devices.forEach(device => {
+            alert("Name: " + device.name + "\nAddress: " + device.address + "\nClass: " + device.class + "\nId: " + device.id)
+        })
+    },
+
+    // This method sends the string to the Raspberry Pi
+    send_to_pi: function (data: string) {
+        BluetoothSerial.write(data).then(() => {
+            alert("Sent " + data + " to pi")
+        }, () => {
+            bluetoothComponent.bluetooth_started = false
+            alert("Failed to send data")
+        })
+    },
+
+    // disconnects bluetooth
+    disconnectBluetooth: function () {
+        bluetoothComponent.bluetooth_started = false
+        BluetoothSerial.disconnect()
+    },
+
+    // Scans all paired bluetooth devices and returns the MAC address of the device with the name "Team-21-Helmet"
+    get_correct_mac: function (devices: pairedlist[]) {
+        let ret: string = "None"
+        devices.forEach(device => {
+            if (device.name == "Team-21-Helmet") {
+                ret = device.address
+            }
+        })
+        return ret
+    },
 
   setMAC: function(MAC:string) {
     bluetoothComponent.macAddress = MAC;
     console.log("Given MAC Address: " + bluetoothComponent.macAddress)
-  },
+    },
+
+    //TODO: properly handle heat and humidity data
+    handle_read: function (heat_humidity: string) {
+        // The heat_humidity string is formatted in the following way:
+        // %t<temp:float>%h<humidity:float>
+        // For example, if the temp were 23.2 degrees C and the humidity were 36.1%, the string would read
+        // %t23.2%h36.1
+        alert(heat_humidity)
+    },
 
   onClick: function() {
     let isClicked = "true"
@@ -105,6 +196,13 @@ export let bluetoothComponent = {
   }
 };
 
+interface pairedlist {
+    "class": number,
+    "id": string,
+    "address": string,
+    "name": string
+}
+
 interface ContainerProps {
     title: string;
   }
@@ -114,7 +212,7 @@ interface ContainerProps {
       <div className="container" id="container">
         <strong>{title}</strong>
             <p>
-                <IonButton color="primary" size="large" onClick={bluetoothComponent.testPiConnect}>Connect to Device</IonButton>
+                <IonButton color="primary" size="large" onClick={bluetoothComponent.pi_connect}>Connect to Device</IonButton>
             </p>
       </div>
     );
