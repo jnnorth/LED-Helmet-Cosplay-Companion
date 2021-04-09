@@ -1,0 +1,17 @@
+#myPage {
+  height: 100vh;
+  min-height: 100vh;
+  background-color: #383838
+}
+
+#myHeader {
+  font-size: 16px;
+  border: 1px solid black;
+  background: LightGray
+}
+
+#myCol {
+  font-size: 14px;
+  border: 1px solid black;
+  background: white;
+}
