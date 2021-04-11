@@ -5,6 +5,7 @@ IonButton, IonModal, IonItem, IonLabel, IonSelect, IonSelectOption,
 IonGrid, IonRow, IonCol, IonList } from '@ionic/react';
 import './Tab2.css';
 import { bluetoothComponent } from '../components/BluetoothButton';
+import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from 'constants';
 
 let mapStr:string = "m "
 let buttonToMap:string | undefined = ""
@@ -115,8 +116,29 @@ function sendButtonMapping(data:string)
   }
   else
   {
+    alert("Bluetooth connection has not been established!")
     console.log("Bluetooth connection has not been established!")
     return data
+  }
+}
+
+function setTempAndHumd(temp:string | undefined, humd:string | undefined)
+{
+  console.log(temp + " and " + humd)
+  sendTempAndHumd("h " + temp + " " + humd)
+  return false
+}
+
+function sendTempAndHumd(toSend:string)
+{
+  console.log("toSend: " + toSend)
+  if (bluetoothComponent.bluetooth_started)
+  {
+    bluetoothComponent.send_to_pi(toSend)
+  }
+  else
+  {
+    alert("Bluetooth connection has not been established!")
   }
 }
 
@@ -128,6 +150,15 @@ const Tab2: React.FC = () => {
   const [buttonChoice, setButtonChoice] = useState<string>();
   const [modChoice, setModChoice] = useState<string>();
   const [animChoice, setAnimChoice] = useState<string>();
+
+  const [temperature, setTemp] = useState<string>();
+  const [humidity, setHumd] = useState<string>();
+
+  function resetForm()
+  {
+    setTemp("")
+    setHumd("")
+  }
 
   return (
     <IonPage>
@@ -171,18 +202,18 @@ const Tab2: React.FC = () => {
                 <IonItem>
                   <label>
                     <b>Temperature:</b>
-                    <input type = "text" placeholder = "currently AA" />
+                    <input value={temperature} id="temp" type = "text" placeholder = "currently AA" onChange={e => setTemp(e.target.value)} />
                   </label>
                 </IonItem>
                 <IonItem>
                   <label>
                     <b>Humidity:</b>
-                    <input type = "text" placeholder = "currently BB" />
+                    <input value={humidity} id="humd" type = "text" placeholder = "currently BB" onChange ={e => setHumd(e.target.value)} />
                   </label>
                 </IonItem>
               </IonList>
             </form>
-            <IonButton onClick={() => setShowModal1(false)}>Ok</IonButton>
+            <IonButton onClick={() => {setTempAndHumd(temperature, humidity); setShowModal1(false); resetForm(); } }>Ok</IonButton>
           </IonModal>
           <IonButton onClick={() => setShowModal1(true)} color="success" shape="round" expand="block">
             Change temperature & humidity preferences
