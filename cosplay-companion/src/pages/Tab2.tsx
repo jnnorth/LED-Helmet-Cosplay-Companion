@@ -5,7 +5,6 @@ IonButton, IonModal, IonItem, IonLabel, IonSelect, IonSelectOption,
 IonGrid, IonRow, IonCol, IonList } from '@ionic/react';
 import './Tab2.css';
 import { bluetoothComponent } from '../components/BluetoothButton';
-import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from 'constants';
 
 let mapStr:string = "m "
 let buttonToMap:string | undefined = ""
@@ -172,10 +171,10 @@ const Tab2: React.FC = () => {
               <IonCol>
                 <IonCard style={{ width: '150px'}}>
                   <IonCardHeader>
-                    <IonCardTitle>Temperature</IonCardTitle>
+                    <IonCardTitle >Temperature</IonCardTitle>
                   </IonCardHeader>
                   <IonCardContent>
-                    XX°C
+                    {bluetoothComponent.current_temp}°C
                   </IonCardContent>
                 </IonCard>
               </IonCol>
@@ -186,7 +185,7 @@ const Tab2: React.FC = () => {
                     <IonCardTitle>Humidity</IonCardTitle>
                   </IonCardHeader>
                   <IonCardContent>
-                    YY%
+                    {bluetoothComponent.current_humd}%
                   </IonCardContent>
                 </IonCard>
               </IonCol>

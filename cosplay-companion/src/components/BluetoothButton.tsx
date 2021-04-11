@@ -8,6 +8,8 @@ export let bluetoothComponent = {
   macAddress: 'DC:A6:32:84:37:41',
     sendText: "Test",
     bluetooth_started: false,
+    current_temp: "XX",
+    current_humd: "YY",
 
     pi_connect: function () {
         BluetoothSerial.disconnect().then(() => {
@@ -113,8 +115,20 @@ export let bluetoothComponent = {
         // %t<temp:float>%h<humidity:float>
         // For example, if the temp were 23.2 degrees C and the humidity were 36.1%, the string would read
         // %t23.2%h36.1
-        alert(heat_humidity)
+
+        let values = heat_humidity.split("%h")
+        let myTemp = values[0].split("%t")
+        let myHumd = values[1]
+        let realTemp = myTemp[1]
+        console.log(realTemp + " " + myHumd)
+        bluetoothComponent.current_temp = realTemp
+        bluetoothComponent.current_humd = myHumd
+        //alert(heat_humidity)
     },
+
+  readTest: function() {
+    bluetoothComponent.handle_read("%t23.2%h36.1")
+  },
 
   onClick: function() {
     let isClicked = "true"
